@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 class Currency extends Model
 {
@@ -11,7 +12,7 @@ class Currency extends Model
      *
      * @var string
      **/
-    public $table = 'currency';
+    protected $table = 'currency';
 
     public $url_daily = "http://www.cbr.ru/scripts/XML_daily.asp?";
     public $url_dynamic = "http://www.cbr.ru/scripts/XML_dynamic.asp?";
@@ -62,12 +63,13 @@ class Currency extends Model
         $data = $this->xml_convert($url);
 
         $insert = [];
-        foreach ($data as $record) {
+        foreach ($data->Record as $record) {
 
+            $date = explode(".", $record->{'@attributes'}->Date);
             $unixtime = mktime(0, 0, 0, $date[1], $date[0], $date[2]);
 
             $insert[] = [
-                "valuteID" => $record->Id,
+                "valuteID" => $record->{'@attributes'}->Id,
                 "numCode" => "",
                 "сharCode" => "",
                 "name" => "",
@@ -114,9 +116,45 @@ class Currency extends Model
 
 
     /*
+     * REST API метод, который возвращает курс(ы)в json валюты для переданного valueID за
+     * указанный период date (from&to) используя данные из таблицы currency.
+     * Параметры передаем методом GET.
+     *
+     * @param $valuteID
+     * @param $parsingFrom
+     * @param $parsingTo
+     *
+     * @return array
+     * */
+    public function getCurrency(Request $request)
+    {
+        if (!empty($request->valuteID))
+            $valuteID = $request->valuteID;
+        else
+            return 'Нет параметра valuteID';
+
+        if (!empty($request->parsingFrom))
+            $parsingFrom = $request->parsingFrom;
+        else
+            return 'Нет параметра parsingFrom';
+
+        if (!empty($request->parsingTo))
+            $parsingTo = $request->parsingTo;
+        else
+            return 'Нет параметра parsingTo';
+
+        $rates = Currency::where('valuteID', '=', $valuteID)
+            ->whereBetween('date', [$parsingFrom, $parsingTo])
+            ->get();
+
+        return $rates;
+    }
+
+
+    /*
      * Конвертер XML, полученный  через url в объект
      *
-     * @param $url
+     * @param string $url
      *
      * @param $object
      **/
@@ -127,6 +165,7 @@ class Currency extends Model
 
         $json = json_encode($xml_data);
         $data = json_decode($json);
+
 
         return $data;
     }

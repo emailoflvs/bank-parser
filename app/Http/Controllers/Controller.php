@@ -18,17 +18,48 @@ class Controller extends BaseController
     {
         $currency = new Currency();
 
+        $days = 1;
         /* XML_daily котировои на указанное количество дней*/
-        $daily = $currency->xml_daily($currency->url_daily, 1);
+        $daily = $currency->xml_daily($currency->url_daily, $days);
+
+
+        $parsingFrom = "11/09/2019";
+        $parsingTo = "12/09/2019";
+        $valuteId = "R01235";
 
         /* XML_dynamic динамики котировок выбранной валюты*/
-//        $dymanic = $currency->xml_dynamic(
-//            "02/09/2019",
-//            "12/09/2019",
-//            "R01235"
-//        );
+        $dymanic = $currency->xml_dynamic(
+            $parsingFrom,
+            $parsingTo,
+            $valuteId
+        );
 
-        return view('welcome');
+        /*
+        * Блок для выбора дня для котировки
+        * */
+        if (!empty($request->parsingDate)) {
+
+            $parsingDate = $request->parsingDate;
+
+            $currency = new Currency();
+            $table = $currency->getParsingTable($parsingDate);
+
+            return view('welcome', [
+                'table' => $table,
+                'date' => $parsingDate,
+                'days' => $days,
+                'parsingFrom' => $parsingFrom,
+                'parsingTo' => $parsingTo,
+                'valuteId' => $valuteId
+            ]);
+        }
+
+        return view('welcome', [
+            'days' => $days,
+            'parsingFrom' => $parsingFrom,
+            'parsingTo' => $parsingTo,
+            'valuteId' => $valuteId
+        ]);
     }
 
 
@@ -45,16 +76,9 @@ class Controller extends BaseController
      * */
     public function getCurrency(Request $request)
     {
-        /* Здесь нужно поставить проверку передаваемых значений*/
-        $valuteID = $request->valuteID;
-        $parsingFrom = $request->parsingFrom;
-        $parsingTo = $request->parsingTo;
+        $currency = new Currency();
 
-        $rates = Currency::where('valuteID', '=', $valuteID)
-            ->whereBetween('date', [$parsingFrom, $parsingTo])
-            ->get();
-
-        return response()->json(['rates' => $rates]);
+        return response()->json(['rates' => $currency->getCurrency($request)]);
     }
 
     /*
@@ -65,14 +89,21 @@ class Controller extends BaseController
      * */
     public function showTable(Request $request)
     {
-        $currency = new Currency();
 
-        $table = $currency->getParsingTable($request->parsingDate);
+        if (!empty($request->parsingDate)) {
 
-        return view('welcome', [
-            'table' => $table,
-            'date' => $request->parsingDate
-        ]);
+            $parsingDate = $request->parsingDate;
+
+            $currency = new Currency();
+            $table = $currency->getParsingTable($parsingDate);
+
+            return view('welcome', [
+                'table' => $table,
+                'date' => $parsingDate
+            ]);
+        }
+
+        return view('welcome', ['table' => [], 'date' => '']);
     }
 
 

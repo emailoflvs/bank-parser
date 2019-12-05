@@ -104,7 +104,23 @@
             Котировки:
         </div>
 
-        <form method="GET" action="/show">
+
+        @isset ($days)
+            <div class="form-group row">
+                Импортировано котировок за {{ $days }} дней
+                <br>
+            </div>
+        @endisset
+
+        @isset ($valuteId)
+            <div class="form-group row">
+                Импортировано динамики котировок {{ $valuteId }} за период {{ $parsingFrom }}-{{ $parsingTo }}
+                <br>
+            </div>
+        @endisset
+
+        <form method="GET" action="/">
+            {{ csrf_field() }}
             <div class="form-group row">
 
                 Выберите дату для котировки:
@@ -123,9 +139,11 @@
 
                 @isset ($table)
 
-                    <div class="date">
-                        Данные за {{ $date }}:
-                    </div>
+                    @isset ($date)
+                        <div class="date">
+                            Данные за {{ $date }}:
+                        </div>
+                    @endisset
 
                     <table>
                         @foreach ($table as $tr)
