@@ -11,6 +11,16 @@
 |
 */
 
-Route::get('/', function () {
-    return view('work');
+/*
+* Аутентификация и регистрация пользователей Larovel 6
+* */
+Auth::routes();
+
+//Route::get('/home', 'HomeController@index')->name('home');
+
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('/', "Controller@index");
 });
+
+
+Route::get('/home', 'HomeController@index')->name('home');
