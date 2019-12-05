@@ -16,12 +16,12 @@
             color: #636b6f;
             font-family: 'Nunito', sans-serif;
             font-weight: 200;
-            height: 100vh;
+            /*height: 100vh;*/
             margin: 0;
         }
 
         .full-height {
-            height: 100vh;
+            /*height: 100vh;*/
         }
 
         .flex-center {
@@ -45,7 +45,7 @@
         }
 
         .title {
-            font-size: 84px;
+            font-size: 44px;
         }
 
         .links > a {
@@ -60,6 +60,17 @@
 
         .m-b-md {
             margin-bottom: 30px;
+            margin-top: 30px;
+        }
+
+        .m-b-md {
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+
+        .date {
+            margin-bottom: 10px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -90,20 +101,80 @@
 
     <div class="content">
         <div class="title m-b-md">
-            Laravel
+            Котировки:
         </div>
 
-        <div class="links">
-            <a href="https://laravel.com/docs">Docs</a>
-            <a href="https://laracasts.com">Laracasts</a>
-            <a href="https://laravel-news.com">News</a>
-            <a href="https://blog.laravel.com">Blog</a>
-            <a href="https://nova.laravel.com">Nova</a>
-            <a href="https://forge.laravel.com">Forge</a>
-            <a href="https://vapor.laravel.com">Vapor</a>
-            <a href="https://github.com/laravel/laravel">GitHub</a>
+        <form method="GET" action="/show">
+            <div class="form-group row">
+
+                Выберите дату для котировки:
+                <input type="date" id="parsingDate" name="parsingDate" class="form-control mtarih"/>
+                {{--                до:--}}
+                {{--                <input type="date" id="parsingTo" name="parsingTo" class="form-control mtarih"/>--}}
+
+                <button type="submit" class="btn btn-primary">
+                    Показать
+                </button>
+            </div>
+        </form>
+
+        <div class="form-group row mb-0">
+            <div class="col-md-8 offset-md-4">
+
+                @isset ($table)
+
+                    <div class="date">
+                        Данные за {{ $date }}:
+                    </div>
+
+                    <table>
+                        @foreach ($table as $tr)
+                            <tr>
+                                <td align="left">{{ $tr['name'] }} </td>
+                                <td>{{ $tr['value'] }} </td>
+                            </tr>
+                        @endforeach
+                    </table>
+                @endisset
+
+
+            </div>
         </div>
+
+
+        {{--        <div class="links">--}}
+        {{--            <a href="https://laravel.com/docs">Docs</a>--}}
+        {{--            <a href="https://laracasts.com">Laracasts</a>--}}
+        {{--            <a href="https://laravel-news.com">News</a>--}}
+        {{--            <a href="https://blog.laravel.com">Blog</a>--}}
+        {{--            <a href="https://nova.laravel.com">Nova</a>--}}
+        {{--            <a href="https://forge.laravel.com">Forge</a>--}}
+        {{--            <a href="https://vapor.laravel.com">Vapor</a>--}}
+        {{--            <a href="https://github.com/laravel/laravel">GitHub</a>--}}
+        {{--        </div>--}}
+
     </div>
+
 </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
