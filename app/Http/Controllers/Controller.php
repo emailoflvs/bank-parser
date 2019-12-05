@@ -65,29 +65,13 @@ class Controller extends BaseController
      * */
     public function showTable(Request $request)
     {
-        $parsingDate = explode("-", $request->parsingDate);
-        $parsingDate = $parsingDate[2] . "/" . $parsingDate[1] . "/" . $parsingDate[0];
+        $currency = new Currency();
 
-        // Url для получения котировки
-        $url = "http://www.cbr.ru/scripts/XML_daily.asp?date_req=" . $parsingDate;
+        $table = $currency->getParsingTable($request->parsingDate);
 
-        $xml = file_get_contents($url);
-        $xml_data = simplexml_load_string($xml); // XML объект
-
-        // Возвращает объект из XML
-        $data = json_decode(json_encode($xml_data));
-
-        $table = [];
-        foreach ($data->Valute as $value) {
-            $table[] = [
-                "valuteID" => $value->{'@attributes'}->ID,
-                "name" => $value->Name,
-                "value" => $value->Value,
-            ];
-        }
         return view('welcome', [
             'table' => $table,
-            'date' => $parsingDate
+            'date' => $request->parsingDate
         ]);
     }
 

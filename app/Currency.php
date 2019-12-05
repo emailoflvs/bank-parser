@@ -13,8 +13,8 @@ class Currency extends Model
      **/
     public $table = 'currency';
 
-    public $url_daily = "http://www.cbr.ru/scripts/XML_daily.asp";
-    public $url_dynamic = "http://www.cbr.ru/scripts/XML_dynamic.asp";
+    public $url_daily = "http://www.cbr.ru/scripts/XML_daily.asp?";
+    public $url_dynamic = "http://www.cbr.ru/scripts/XML_dynamic.asp?";
 
     /*
      * Добавление в базу котировок на заданный день
@@ -27,10 +27,10 @@ class Currency extends Model
         $day = 60 * 60 * 24;
         for ($from = (time() - ($day * $days)); $from <= time(); $from += $day) {
             $date = date("d/n/Y", $from);
-            $url = $url . "?date_req=" . $date;
+            $url = $url . "date_req=" . $date;
 
             // конвертирует url в объект
-            $data = $this->xml_coonvert($url);
+            $data = $this->xml_convert($url);
 
             foreach ($data->Valute as $value) {
                 $insert = [
@@ -56,10 +56,10 @@ class Currency extends Model
      * */
     public function xml_dynamic($parsingFrom, $parsingTo, $valuteID)
     {
-        $url = $this->url_dynamic . "?date_req1=" . $parsingFrom . "&date_req2=" . $parsingTo . "&VAL_NM_RQ=" . $valuteID;
+        $url = $this->url_dynamic . "date_req1=" . $parsingFrom . "&date_req2=" . $parsingTo . "&VAL_NM_RQ=" . $valuteID;
 
         // конвертирует url в объект
-        $data = $this->xml_coonvert($url);
+        $data = $this->xml_convert($url);
 
         $insert = [];
         foreach ($data as $record) {
@@ -67,11 +67,11 @@ class Currency extends Model
             $unixtime = mktime(0, 0, 0, $date[1], $date[0], $date[2]);
 
             $insert[] = [
-//                "valuteID" => $record->Id,
+                "valuteID" => $record->Id,
                 "numCode" => "",
                 "сharCode" => "",
                 "name" => "",
-//                "value" => $record->Value,
+                "value" => $record->Value,
                 "date" => $unixtime
             ];
 
@@ -85,13 +85,42 @@ class Currency extends Model
 
 
     /*
+     * Возвращает таблицу со списком валют и данными по этим валютам за указанную вдату.
+     *
+     * @param $parsingDate
+     *
+     * */
+    public function getParsingTable($parsingDate)
+    {
+        $parsingDate = explode("-", $parsingDate);
+        $parsingDate = $parsingDate[2] . "/" . $parsingDate[1] . "/" . $parsingDate[0];
+
+        // Url для получения котировки
+        $url = $this->url_daily . "date_req=" . $parsingDate;
+
+        // конвертирует url в объект
+        $data = $this->xml_convert($url);
+
+        $table = [];
+        foreach ($data->Valute as $value) {
+            $table[] = [
+                "valuteID" => $value->{'@attributes'}->ID,
+                "name" => $value->Name,
+                "value" => $value->Value,
+            ];
+        }
+        return $table;
+    }
+
+
+    /*
      * Конвертер XML, полученный  через url в объект
      *
      * @param $url
      *
      * @param $object
      **/
-    public function xml_coonvert($url)
+    public function xml_convert($url)
     {
         $xml = file_get_contents($url);
         $xml_data = simplexml_load_string($xml); // XML объект
