@@ -20,15 +20,14 @@ class Currency extends Model
     /*
      * Добавление в базу котировок на заданный день
      *
-     * @param $url
      * @param $days
      **/
-    public function xml_daily($url, $days)
+    public function xml_daily($days)
     {
         $day = 60 * 60 * 24;
         for ($from = (time() - ($day * $days)); $from <= time(); $from += $day) {
             $date = date("d/n/Y", $from);
-            $url = $url . "date_req=" . $date;
+            $url = $this->url_daily . "date_req=" . $date;
 
             // конвертирует url в объект
             $data = $this->xml_convert($url);
@@ -52,36 +51,45 @@ class Currency extends Model
     /*
      * Добавление в базу котировок за указанный период времени и указанную валюту
      *
-     * @param $url
-     * @param $days
+     * @param $parsingFrom
+     * @param $parsingTo
+     * @param $valuteID
      * */
     public function xml_dynamic($parsingFrom, $parsingTo, $valuteID)
     {
+        $parsingFrom = explode("-", $parsingFrom);
+        $parsingFrom = $parsingFrom[2] . "/" . $parsingFrom[1] . "/" . $parsingFrom[0];
+
+        $parsingTo = explode("-", $parsingTo);
+        $parsingTo = $parsingTo[2] . "/" . $parsingTo[1] . "/" . $parsingTo[0];
+
         $url = $this->url_dynamic . "date_req1=" . $parsingFrom . "&date_req2=" . $parsingTo . "&VAL_NM_RQ=" . $valuteID;
 
         // конвертирует url в объект
         $data = $this->xml_convert($url);
 
-        $insert = [];
-        foreach ($data->Record as $record) {
+        if (isset($data->Record)) {
+            $insert = [];
+            foreach ($data->Record as $record) {
 
-            $date = explode(".", $record->{'@attributes'}->Date);
-            $unixtime = mktime(0, 0, 0, $date[1], $date[0], $date[2]);
+                if (isset($record->{'@attributes'})) {
+                    $date = explode(".", $record->{'@attributes'}->Date);
+                    $unixtime = mktime(0, 0, 0, $date[1], $date[0], $date[2]);
 
-            $insert[] = [
-                "valuteID" => $record->{'@attributes'}->Id,
-                "numCode" => "",
-                "сharCode" => "",
-                "name" => "",
-                "value" => $record->Value,
-                "date" => $unixtime
-            ];
+                    $insert[] = [
+                        "valuteID" => $record->{'@attributes'}->Id,
+                        "numCode" => "",
+                        "сharCode" => "",
+                        "name" => "",
+                        "value" => $record->Value,
+                        "date" => $unixtime
+                    ];
+                }
+            }
 
+            if (!empty ($insert))
+                return Currency::insert($insert);
         }
-
-        if (!empty ($insert))
-            return Currency::insert($insert);
-
         return false;
     }
 
@@ -90,7 +98,7 @@ class Currency extends Model
      * Возвращает таблицу со списком валют и данными по этим валютам за указанную вдату.
      *
      * @param $parsingDate
-     *
+     * @result array
      * */
     public function getParsingTable($parsingDate)
     {
@@ -116,47 +124,11 @@ class Currency extends Model
 
 
     /*
-     * REST API метод, который возвращает курс(ы)в json валюты для переданного valueID за
-     * указанный период date (from&to) используя данные из таблицы currency.
-     * Параметры передаем методом GET.
-     *
-     * @param $valuteID
-     * @param $parsingFrom
-     * @param $parsingTo
-     *
-     * @return array
-     * */
-    public function getCurrency(Request $request)
-    {
-        if (!empty($request->valuteID))
-            $valuteID = $request->valuteID;
-        else
-            return 'Нет параметра valuteID';
-
-        if (!empty($request->parsingFrom))
-            $parsingFrom = $request->parsingFrom;
-        else
-            return 'Нет параметра parsingFrom';
-
-        if (!empty($request->parsingTo))
-            $parsingTo = $request->parsingTo;
-        else
-            return 'Нет параметра parsingTo';
-
-        $rates = Currency::where('valuteID', '=', $valuteID)
-            ->whereBetween('date', [$parsingFrom, $parsingTo])
-            ->get();
-
-        return $rates;
-    }
-
-
-    /*
      * Конвертер XML, полученный  через url в объект
      *
      * @param string $url
      *
-     * @param $object
+     * @result $object
      **/
     public function xml_convert($url)
     {
@@ -165,7 +137,6 @@ class Currency extends Model
 
         $json = json_encode($xml_data);
         $data = json_decode($json);
-
 
         return $data;
     }

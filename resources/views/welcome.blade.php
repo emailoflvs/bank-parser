@@ -45,7 +45,8 @@
         }
 
         .title {
-            font-size: 44px;
+            font-size: 24px;
+            padding-top: 50px;
         }
 
         .links > a {
@@ -79,7 +80,6 @@
     @if (Route::has('login'))
         <div class="top-right links">
             @auth
-                {{--                <a href="{{ url('/home') }}">Home</a>--}}
                 <a href="{{ url('/logout') }}"
                    onclick="event.preventDefault();
                                  document.getElementById('logout-form').submit();">
@@ -101,9 +101,19 @@
 
     <div class="content">
         <div class="title m-b-md">
-            Котировки:
+            Импорт котировок за кол-во дней:
         </div>
 
+        {!! Form::open(['route' => 'xml_daily', 'method' => 'get']) !!}
+        {{ csrf_field() }}
+
+        Количество последних дней для импорта котировок
+
+        {!! Form::text('days', '', ['class' => 'form-control']) !!}
+
+        {{ Form::submit('Импортировать', ['class' => 'form-control']) }}
+
+        {!! Form::close() !!}
 
         @isset ($days)
             <div class="form-group row">
@@ -112,68 +122,86 @@
             </div>
         @endisset
 
-        @isset ($valuteId)
-            <div class="form-group row">
-                Импортировано динамики котировок {{ $valuteId }} за период {{ $parsingFrom }}-{{ $parsingTo }}
-                <br>
-            </div>
-        @endisset
 
-        <form method="GET" action="/">
+        <div class="content">
+            <div class="title m-b-md">
+                Импорт котировок за период:
+            </div>
+
+            {!! Form::open(['route' => 'xml_dynamic', 'method' => 'get']) !!}
             {{ csrf_field() }}
-            <div class="form-group row">
 
-                Выберите дату для котировки:
-                <input type="date" id="parsingDate" name="parsingDate" class="form-control mtarih"/>
-                {{--                до:--}}
-                {{--                <input type="date" id="parsingTo" name="parsingTo" class="form-control mtarih"/>--}}
 
-                <button type="submit" class="btn btn-primary">
-                    Показать
-                </button>
+            Выберите период:
+            {{ Form::date('parsingFrom', \Carbon\Carbon::now()) }}
+
+            {{ Form::date('parsingTo', \Carbon\Carbon::now()) }}
+
+            {{ Form::submit('Импортировать', ['class' => 'form-control']) }}
+
+            {!! Form::close() !!}
+
+            @isset ($parsingFrom)
+                <div class="form-group row">
+                    Импортированы котировки за период:
+                    {{ $parsingFrom }}-{{ $parsingTo }}
+                    <br>
+                    Код валюты:{{ $valuteId }}
+                    <br>
+                </div>
+            @endisset
+            @isset ($parsingError)
+                <div class="form-group row">
+                    {{ $parsingError }}
+                    <br>
+                </div>
+            @endisset
+
+            <div class="title m-b-md">
+                Данными по валютам:
             </div>
-        </form>
 
-        <div class="form-group row mb-0">
-            <div class="col-md-8 offset-md-4">
+            {!! Form::open(['route' => 'show_table', 'method' => 'get']) !!}
+            {{ csrf_field() }}
 
-                @isset ($table)
+            Выберите дату:
+            {{ Form::date('parsingDate', \Carbon\Carbon::now()) }}
 
-                    @isset ($date)
-                        <div class="date">
-                            Данные за {{ $date }}:
-                        </div>
+            {{--        {{ Form::date('test', \Carbon\CarbonPeriod::between('2018-10-30 13:26:19', '2019-10-30 13:26:19')) }}--}}
+
+            {{ Form::submit('Показать', ['class' => 'form-control']) }}
+
+            {!! Form::close() !!}
+
+
+            <div class="form-group row mb-0">
+                <div class="col-md-8 offset-md-4">
+
+                    @isset ($table)
+
+                        @isset ($date)
+                            <div class="date">
+                                Данные за {{ $date }}:
+                            </div>
+                        @endisset
+
+                        <table>
+                            @foreach ($table as $tr)
+                                <tr>
+                                    <td align="left">{{ $tr['name'] }} </td>
+                                    <td>{{ $tr['value'] }} </td>
+                                </tr>
+                            @endforeach
+                        </table>
                     @endisset
 
-                    <table>
-                        @foreach ($table as $tr)
-                            <tr>
-                                <td align="left">{{ $tr['name'] }} </td>
-                                <td>{{ $tr['value'] }} </td>
-                            </tr>
-                        @endforeach
-                    </table>
-                @endisset
 
-
+                </div>
             </div>
+
         </div>
 
-
-        {{--        <div class="links">--}}
-        {{--            <a href="https://laravel.com/docs">Docs</a>--}}
-        {{--            <a href="https://laracasts.com">Laracasts</a>--}}
-        {{--            <a href="https://laravel-news.com">News</a>--}}
-        {{--            <a href="https://blog.laravel.com">Blog</a>--}}
-        {{--            <a href="https://nova.laravel.com">Nova</a>--}}
-        {{--            <a href="https://forge.laravel.com">Forge</a>--}}
-        {{--            <a href="https://vapor.laravel.com">Vapor</a>--}}
-        {{--            <a href="https://github.com/laravel/laravel">GitHub</a>--}}
-        {{--        </div>--}}
-
     </div>
-
-</div>
 </body>
 </html>
 

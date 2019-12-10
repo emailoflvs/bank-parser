@@ -17,9 +17,11 @@
 Auth::routes();
 
 Route::group(['middleware' => 'auth'], function () {
-    Route::get('/', "Controller@index");
-//    Route::get('/show', "Controller@showTable");
+    Route::get('/', "Controller@index")->name('index');
+    Route::get('xml_daily', "Controller@xml_daily")->name('xml_daily');
+    Route::get('xml_dynamic', "Controller@xml_dynamic")->name('xml_dynamic');
+    Route::get('show_table', "Controller@show_table")->name('show_table');
 });
 
 
-Route::get('/home', 'HomeController@index')->name('home');
+//Route::get('/home', 'HomeController@index')->name('home');
