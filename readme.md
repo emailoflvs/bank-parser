@@ -1,25 +1,23 @@
+Script for parsing the exchange rate of the Central Bank of the Russian Federation.
 
-Скрипт для парсинга курса валют Центробанка РФ.
-
-1. Используя открытые методы (XML_daily и XML_dynamic) Центробанка РФ (http://www.cbr.ru/development/SXML/)
-получаем и заполняем Базу Данных.
-В БД есть таблица currency:
-valuteID - идентификатор валюты, который возвращает метод (пример: R01010)
-numCode -  числовой код валюты (пример: 036)
-сharCode - буквенный код валюты (пример: AUD)
-name - имя валюты (пример: Австралийский доллар)
-value - значение курса (пример: 43,9538)
-date - дата публикации курса (может быть в UNIX-формате или ISO 8601)
+1. Using open methods (XML_daily and XML_dynamic) of the Central Bank of the Russian Federation (http://www.cbr.ru/development/SXML/)
+get and fill the database.
+There is a currency table in the database:
+valueID - currency identifier that the method returns (example: R01010)
+numCode - numeric currency code (example: 036)
+charCode - alphabetic currency code (example: AUD)
+name - currency name (example: Australian dollar)
+value - rate value (example: 43.9538)
+date - the date the course was published (can be in UNIX format or ISO 8601)
 
 
-2. Реализован REST API метод, который взвращает курс(ы) валюты для переданного valueID за указанный период:
- parsingFrom
- parsingTo
- valuteID (id валюты)
- Параметры передаем методом GET.
+2. A REST API method has been implemented that returns the exchange rate(s) for the passed valueID for the specified period:
+  parsingFrom
+  parsingTo
+  valueID (currency id)
+  Parameters are passed using the GET method.
 
-3. Реализована страница авторизации и регистрации.
-На главной странице размещается таблица со списком валют и данными по этим валютам за указанную в поле/селекторе дату.
-Автвоматически, при открытии страницы. происходит импорт котировок за Х дней и динамики котировок за тестовый период.
-Все тестовые данные указаны в Controller@index.
-
+3. Implemented authorization and registration page.
+The main page contains a table with a list of currencies and data on these currencies for the date specified in the field/selector.
+Automatically when the page is opened. there is an import of quotes for X days and the dynamics of quotes for the test period.
+All test data is specified in Controller@index.
